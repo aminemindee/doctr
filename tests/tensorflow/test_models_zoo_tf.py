@@ -46,6 +46,7 @@ def test_ocrpredictor(mock_pdf, mock_vocab, assume_straight_pages, straighten_pa
         reco_predictor,
         assume_straight_pages=assume_straight_pages,
         straighten_pages=straighten_pages,
+        detect_language=True,
     )
 
     if assume_straight_pages:
@@ -61,6 +62,9 @@ def test_ocrpredictor(mock_pdf, mock_vocab, assume_straight_pages, straighten_pa
         input_page = (255 * np.random.rand(1, 256, 512, 3)).astype(np.uint8)
         _ = predictor([input_page])
 
+    language = "unknown"
+    assert out.pages[0].language['value'] == language
+
 
 def test_trained_ocr_predictor(mock_tilted_payslip):
     doc = DocumentFile.from_images(mock_tilted_payslip)
@@ -73,11 +77,11 @@ def test_trained_ocr_predictor(mock_tilted_payslip):
         reco_predictor,
         assume_straight_pages=True,
         straighten_pages=True,
-        detect_language=True,
     )
 
     out = predictor(doc)
 
+    print(out.pages)
     assert out.pages[0].blocks[0].lines[0].words[0].value == 'Mr.'
     geometry_mr = np.array([[0.08844472, 0.35763523],
                             [0.11625107, 0.34320644],
@@ -91,9 +95,6 @@ def test_trained_ocr_predictor(mock_tilted_payslip):
                                  [0.56705294, 0.18241881],
                                  [0.51385817, 0.21002172]])
     assert np.allclose(np.array(out.pages[0].blocks[1].lines[0].words[-1].geometry), geometry_revised)
-
-    language = "en"
-    assert out.pages[0].language['value'] == language
 
     det_predictor = detection_predictor(
         'db_resnet50', pretrained=True, batch_size=2, assume_straight_pages=True,
