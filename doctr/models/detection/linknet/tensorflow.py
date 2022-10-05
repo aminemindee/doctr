@@ -119,7 +119,6 @@ class LinkNet(_LinkNet, keras.Model):
         self,
         feat_extractor: IntermediateLayerGetter,
         fpn_channels: int = 64,
-        num_classes: int = 1,
         assume_straight_pages: bool = True,
         exportable: bool = False,
         cfg: Optional[Dict[str, Any]] = None,
@@ -128,8 +127,7 @@ class LinkNet(_LinkNet, keras.Model):
         super().__init__(cfg=cfg)
 
         self.class_names = class_names
-        if self.cfg and self.cfg.get("class_names"):
-            self.class_names = self.cfg["class_names"]
+        num_classes: int = len(self.class_names)
 
         self.exportable = exportable
         self.assume_straight_pages = assume_straight_pages

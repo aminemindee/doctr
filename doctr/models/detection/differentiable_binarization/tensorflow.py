@@ -123,7 +123,6 @@ class DBNet(_DBNet, keras.Model, NestedObject):
         self,
         feature_extractor: IntermediateLayerGetter,
         fpn_channels: int = 128,  # to be set to 256 to represent the author's initial idea
-        num_classes: int = 1,
         assume_straight_pages: bool = True,
         exportable: bool = False,
         cfg: Optional[Dict[str, Any]] = None,
@@ -132,6 +131,7 @@ class DBNet(_DBNet, keras.Model, NestedObject):
 
         super().__init__()
         self.class_names = class_names
+        num_classes: int = len(self.class_names)
         self.cfg = cfg
 
         self.feat_extractor = feature_extractor

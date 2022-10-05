@@ -122,7 +122,6 @@ class DBNet(_DBNet, nn.Module):
         feat_extractor: IntermediateLayerGetter,
         head_chans: int = 256,
         deform_conv: bool = False,
-        num_classes: int = 1,
         assume_straight_pages: bool = True,
         exportable: bool = False,
         cfg: Optional[Dict[str, Any]] = None,
@@ -131,6 +130,7 @@ class DBNet(_DBNet, nn.Module):
 
         super().__init__()
         self.class_names = class_names
+        num_classes: int = len(self.class_names)
         self.cfg = cfg
 
         conv_layer = DeformConv2d if deform_conv else nn.Conv2d

@@ -103,7 +103,6 @@ class LinkNet(nn.Module, _LinkNet):
     def __init__(
         self,
         feat_extractor: IntermediateLayerGetter,
-        num_classes: int = 1,
         head_chans: int = 32,
         assume_straight_pages: bool = True,
         exportable: bool = False,
@@ -113,8 +112,7 @@ class LinkNet(nn.Module, _LinkNet):
 
         super().__init__()
         self.class_names = class_names
-        if cfg and cfg.get("class_names"):
-            self.class_names = cfg["class_names"]
+        num_classes: int = len(self.class_names)
         self.cfg = cfg
         self.exportable = exportable
         self.assume_straight_pages = assume_straight_pages
