@@ -82,3 +82,11 @@ def plot_recorder(lr_recorder, loss_recorder, beta: float = 0.95, **kwargs) -> N
     plt.ylim(vals[min_idx] - 0.1 * delta, max_val + 0.2 * delta)
     plt.grid(True, linestyle="--", axis="x")
     plt.show(**kwargs)
+
+
+def load_backbone(model, weights_path):
+    import pickle
+    pretrained_backbone_weights = pickle.load(open(weights_path, "rb"))
+    model.feat_extractor.set_weights(pretrained_backbone_weights[0])
+    model.fpn.set_weights(pretrained_backbone_weights[1])
+    return model
