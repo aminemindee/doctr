@@ -21,7 +21,7 @@ from doctr.utils.geometry import resolve_enclosing_bbox, resolve_enclosing_rbbox
 from doctr.utils.repr import NestedObject
 from doctr.utils.visualization import synthesize_kie_page, synthesize_page, visualize_kie_page, visualize_page
 
-__all__ = ["Element", "Word", "Artefact", "Line", "Block", "Page", "KIEPage", "Document"]
+__all__ = ["Element", "Word", "Artefact", "Line", "Prediction", "Block", "Page", "KIEPage", "Document"]
 
 
 class Element(NestedObject):
@@ -164,6 +164,17 @@ class Line(Element):
             }
         )
         return cls(**kwargs)
+
+
+class Prediction(Word):
+    """Implements a prediction element"""
+
+    def render(self) -> Tuple[str, Union[BoundingBox, np.ndarray]]:
+        """Renders the full text of the element"""
+        return self.value, self.geometry
+
+    def extra_repr(self) -> str:
+        return f"value='{self.value}', confidence={self.confidence:.2}, bounding_box={self.geometry}"
 
 
 class Block(Element):

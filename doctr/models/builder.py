@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from scipy.cluster.hierarchy import fclusterdata
 
-from doctr.io.elements import Block, Document, KIEDocument, KIEPage, Line, Page, Word
+from doctr.io.elements import Block, Document, KIEDocument, KIEPage, Line, Page, Word, Prediction
 from doctr.utils.geometry import estimate_page_angle, resolve_enclosing_bbox, resolve_enclosing_rbbox, rotate_boxes
 from doctr.utils.repr import NestedObject
 
@@ -403,3 +403,69 @@ class KIEDocumentBuilder(DocumentBuilder):
         ]
 
         return KIEDocument(_pages)
+
+    def _build_blocks(self, boxes: np.ndarray, word_preds: List[Tuple[str, float]]) -> List[Block]:
+        """Gather independent words in structured blocks
+
+        Args:
+            boxes: bounding boxes of all detected words of the page, of shape (N, 5) or (N, 4, 2)
+            word_preds: list of all detected words of the page, of shape N
+
+        Returns:
+            list of block elements
+        """
+
+        if boxes.shape[0] != len(word_preds):
+            raise ValueError(f"Incompatible argument lengths: {boxes.shape[0]}, {len(word_preds)}")
+
+        if boxes.shape[0] == 0:
+            return []
+
+        # Decide whether we try to form lines
+        _boxes = boxes
+        idxs, _ = self._sort_boxes(_boxes if _boxes.ndim == 3 else _boxes[:, :4])
+        predictions = [
+            Prediction(
+                *word_preds[idx],
+                geometry=tuple([tuple(pt) for pt in boxes[idx].tolist()]),  # type: ignore[arg-type]
+            )
+            if boxes.ndim == 3
+            else Prediction(
+                *word_preds[idx], geometry=((boxes[idx, 0], boxes[idx, 1]), (boxes[idx, 2], boxes[idx, 3]))
+            )
+            for idx in idxs
+        ]
+        return predictions
+        # lines = self._resolve_blocks_per_prediction(_boxes if _boxes.ndim == 3 else _boxes[:, :4])
+        # _blocks = [[item] for item in lines]
+
+        # blocks = [
+        #     Block(
+        #         [
+        #             Line(
+        #                 [
+        #                     Word(
+        #                         *word_preds[idx],
+        #                         tuple([tuple(pt) for pt in boxes[idx].tolist()]),  # type: ignore[arg-type]
+        #                     )
+        #                     if boxes.ndim == 3
+        #                     else Word(
+        #                         *word_preds[idx], ((boxes[idx, 0], boxes[idx, 1]), (boxes[idx, 2], boxes[idx, 3]))
+        #                     )
+        #                     for idx in line
+        #                 ]
+        #             )
+        #             for line in lines
+        #         ]
+        #     )
+        #     for lines in _blocks
+        # ]
+        #
+        # return blocks
+
+    def _resolve_blocks_per_prediction(self, boxes: np.ndarray) -> List[List[int]]:
+        idxs, boxes = self._sort_boxes(boxes)
+        lines = []
+        for idx in idxs:
+            lines.extend(self._resolve_sub_lines(boxes, [idx]))
+        return lines

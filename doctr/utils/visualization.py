@@ -334,7 +334,7 @@ def synthesize_page(
 def visualize_kie_page(
     page: Dict[str, Any],
     image: np.ndarray,
-    words_only: bool = True,
+    words_only: bool = False,
     display_artefacts: bool = True,
     scale: float = 10,
     interactive: bool = True,
@@ -381,7 +381,7 @@ def visualize_kie_page(
                 rect = create_obj_patch(
                     block["geometry"],
                     page["dimensions"],
-                    label=f"block_{key}",
+                    label=f"{key} \n {block['value']} (confidence: {block['confidence']:.2%}",
                     color=colors[key],
                     linewidth=1,
                     **kwargs,
@@ -392,61 +392,61 @@ def visualize_kie_page(
                     # add patch to cursor's artists
                     artists.append(rect)
 
-            for line in block["lines"]:
-                if not words_only:
-                    rect = create_obj_patch(
-                        line["geometry"], page["dimensions"], label="line", color=(1, 0, 0), linewidth=1, **kwargs
-                    )
-                    ax.add_patch(rect)
-                    if interactive:
-                        artists.append(rect)
+            # for line in block["lines"]:
+            #     if not words_only:
+            #         rect = create_obj_patch(
+            #             line["geometry"], page["dimensions"], label="line", color=(1, 0, 0), linewidth=1, **kwargs
+            #         )
+            #         ax.add_patch(rect)
+            #         if interactive:
+            #             artists.append(rect)
+            #
+            #     for word in line["words"]:
+            #         rect = create_obj_patch(
+            #             word["geometry"],
+            #             page["dimensions"],
+            #             label=f"{word['value']} (confidence: {word['confidence']:.2%})",
+            #             color=(0, 0, 1),
+            #             **kwargs,
+            #         )
+            #         ax.add_patch(rect)
+            #         if interactive:
+            #             artists.append(rect)
+            #         elif add_labels:
+            #             if len(word["geometry"]) == 5:
+            #                 text_loc = (
+            #                     int(page["dimensions"][1] * (word["geometry"][0] - word["geometry"][2] / 2)),
+            #                     int(page["dimensions"][0] * (word["geometry"][1] - word["geometry"][3] / 2)),
+            #                 )
+            #             else:
+            #                 text_loc = (
+            #                     int(page["dimensions"][1] * word["geometry"][0][0]),
+            #                     int(page["dimensions"][0] * word["geometry"][0][1]),
+            #                 )
+            #
+            #             if len(word["geometry"]) == 2:
+            #                 # We draw only if boxes are in straight format
+            #                 ax.text(
+            #                     *text_loc,
+            #                     word["value"],
+            #                     size=10,
+            #                     alpha=0.5,
+            #                     color=(0, 0, 1),
+            #                 )
 
-                for word in line["words"]:
-                    rect = create_obj_patch(
-                        word["geometry"],
-                        page["dimensions"],
-                        label=f"{word['value']} (confidence: {word['confidence']:.2%})",
-                        color=(0, 0, 1),
-                        **kwargs,
-                    )
-                    ax.add_patch(rect)
-                    if interactive:
-                        artists.append(rect)
-                    elif add_labels:
-                        if len(word["geometry"]) == 5:
-                            text_loc = (
-                                int(page["dimensions"][1] * (word["geometry"][0] - word["geometry"][2] / 2)),
-                                int(page["dimensions"][0] * (word["geometry"][1] - word["geometry"][3] / 2)),
-                            )
-                        else:
-                            text_loc = (
-                                int(page["dimensions"][1] * word["geometry"][0][0]),
-                                int(page["dimensions"][0] * word["geometry"][0][1]),
-                            )
-
-                        if len(word["geometry"]) == 2:
-                            # We draw only if boxes are in straight format
-                            ax.text(
-                                *text_loc,
-                                word["value"],
-                                size=10,
-                                alpha=0.5,
-                                color=(0, 0, 1),
-                            )
-
-            if display_artefacts:
-                for artefact in block["artefacts"]:
-                    rect = create_obj_patch(
-                        artefact["geometry"],
-                        page["dimensions"],
-                        label="artefact",
-                        color=(0.5, 0.5, 0.5),
-                        linewidth=1,
-                        **kwargs,
-                    )
-                    ax.add_patch(rect)
-                    if interactive:
-                        artists.append(rect)
+            # if display_artefacts:
+            #     for artefact in block["artefacts"]:
+            #         rect = create_obj_patch(
+            #             artefact["geometry"],
+            #             page["dimensions"],
+            #             label="artefact",
+            #             color=(0.5, 0.5, 0.5),
+            #             linewidth=1,
+            #             **kwargs,
+            #         )
+            #         ax.add_patch(rect)
+            #         if interactive:
+            #             artists.append(rect)
 
     if interactive:
         # Create mlp Cursor to hover patches in artists
