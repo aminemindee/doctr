@@ -120,9 +120,7 @@ def main(args):
                             ) = prediction.geometry
                         if gt_boxes.dtype == int:
                             if not args.rotation:
-                                pred_boxes.append(
-                                    [int(a * width), int(b * height), int(c * width), int(d * height)]
-                                )
+                                pred_boxes.append([int(a * width), int(b * height), int(c * width), int(d * height)])
                             else:
                                 if args.eval_straight:
                                     pred_boxes.append(
