@@ -30,7 +30,7 @@ from doctr import transforms as T
 from doctr.datasets import DataLoader, DetectionDataset
 from doctr.models import detection
 from doctr.utils.metrics import LocalizationConfusion
-from utils import plot_recorder, plot_samples, load_backbone
+from utils import load_backbone, plot_recorder, plot_samples
 
 
 def record_lr(

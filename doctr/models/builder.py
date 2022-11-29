@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from scipy.cluster.hierarchy import fclusterdata
 
-from doctr.io.elements import Block, Document, KIEDocument, KIEPage, Line, Page, Word, Prediction
+from doctr.io.elements import Block, Document, KIEDocument, KIEPage, Line, Page, Prediction, Word
 from doctr.utils.geometry import estimate_page_angle, resolve_enclosing_bbox, resolve_enclosing_rbbox, rotate_boxes
 from doctr.utils.repr import NestedObject
 
@@ -335,7 +335,7 @@ class DocumentBuilder(NestedObject):
 
 
 class KIEDocumentBuilder(DocumentBuilder):
-    """Implements a document builder
+    """Implements a KIE document builder
 
     Args:
         resolve_lines: whether words should be automatically grouped into lines
@@ -353,7 +353,7 @@ class KIEDocumentBuilder(DocumentBuilder):
         orientations: Optional[List[Dict[str, Any]]] = None,
         languages: Optional[List[Dict[str, Any]]] = None,
     ) -> KIEDocument:
-        """Re-arrange detected words into structured blocks
+        """Re-arrange detected words into structured predictions
 
         Args:
             boxes: list of N dictionaries, where each element represents the localization predictions for a class,
@@ -404,7 +404,11 @@ class KIEDocumentBuilder(DocumentBuilder):
 
         return KIEDocument(_pages)
 
-    def _build_blocks(self, boxes: np.ndarray, word_preds: List[Tuple[str, float]]) -> List[Block]:
+    def _build_blocks(  # type: ignore[override]
+        self,
+        boxes: np.ndarray,
+        word_preds: List[Tuple[str, float]],
+    ) -> List[Prediction]:
         """Gather independent words in structured blocks
 
         Args:
@@ -426,46 +430,16 @@ class KIEDocumentBuilder(DocumentBuilder):
         idxs, _ = self._sort_boxes(_boxes if _boxes.ndim == 3 else _boxes[:, :4])
         predictions = [
             Prediction(
-                *word_preds[idx],
+                value=word_preds[idx][0],
+                confidence=word_preds[idx][1],
                 geometry=tuple([tuple(pt) for pt in boxes[idx].tolist()]),  # type: ignore[arg-type]
             )
             if boxes.ndim == 3
             else Prediction(
-                *word_preds[idx], geometry=((boxes[idx, 0], boxes[idx, 1]), (boxes[idx, 2], boxes[idx, 3]))
+                value=word_preds[idx][0],
+                confidence=word_preds[idx][1],
+                geometry=((boxes[idx, 0], boxes[idx, 1]), (boxes[idx, 2], boxes[idx, 3])),
             )
             for idx in idxs
         ]
         return predictions
-        # lines = self._resolve_blocks_per_prediction(_boxes if _boxes.ndim == 3 else _boxes[:, :4])
-        # _blocks = [[item] for item in lines]
-
-        # blocks = [
-        #     Block(
-        #         [
-        #             Line(
-        #                 [
-        #                     Word(
-        #                         *word_preds[idx],
-        #                         tuple([tuple(pt) for pt in boxes[idx].tolist()]),  # type: ignore[arg-type]
-        #                     )
-        #                     if boxes.ndim == 3
-        #                     else Word(
-        #                         *word_preds[idx], ((boxes[idx, 0], boxes[idx, 1]), (boxes[idx, 2], boxes[idx, 3]))
-        #                     )
-        #                     for idx in line
-        #                 ]
-        #             )
-        #             for line in lines
-        #         ]
-        #     )
-        #     for lines in _blocks
-        # ]
-        #
-        # return blocks
-
-    def _resolve_blocks_per_prediction(self, boxes: np.ndarray) -> List[List[int]]:
-        idxs, boxes = self._sort_boxes(boxes)
-        lines = []
-        for idx in idxs:
-            lines.extend(self._resolve_sub_lines(boxes, [idx]))
-        return lines
