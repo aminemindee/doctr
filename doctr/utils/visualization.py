@@ -424,8 +424,6 @@ def synthesize_kie_page(
     # Draw each word
     for predictions in page["predictions"].values():
         for prediction in predictions:
-            # for line in prediction["lines"]:
-            #     for word in line["words"]:
             # Get aboslute word geometry
             (xmin, ymin), (xmax, ymax) = prediction["geometry"]
             xmin, xmax = int(round(w * xmin)), int(round(w * xmax))
